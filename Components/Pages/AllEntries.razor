@@ -1,0 +1,44 @@
+﻿@page "/entries"
+@* All Entries Listing Page *@
+<div class="all-entries-layout">
+    <div class="entries-header-row">
+        <h1>All Journal Entries</h1>
+        <span class="entries-count">12 entries</span>
+    </div>
+    <div class="entries-toolbar">
+        <input class="entries-search" placeholder="🔍 Search entries..." />
+        <button class="entries-filter">FilterWhere: Mood, Tag, Date</button>
+        <button class="entries-sort">Sort: Newest First ▼</button>
+        <button class="entries-newentry">+ New Entry</button>
+    </div>
+    <div class="entries-list">
+        <div class="entry-card">
+            <div class="entry-card-header">
+                <span class="entry-card-date">December 21, 2025</span>
+                <span class="entry-card-wordcount">312 words</span>
+            </div>
+            <div class="entry-card-title">A Quiet Sunday Morning</div>
+            <div class="entry-card-tags">😊 Calm <span>mindfulness • routine</span></div>
+        </div>
+        <div class="entry-card">
+            <div class="entry-card-header">
+                <span class="entry-card-date">December 20, 2025</span>
+                <span class="entry-card-wordcount">245 words</span>
+            </div>
+            <div class="entry-card-title">A Productive Day</div>
+            <div class="entry-card-tags">😊 Happy <span>work • personal • reflection</span></div>
+        </div>
+        <div class="entry-card">
+            <div class="entry-card-header">
+                <span class="entry-card-date">December 18, 2025</span>
+                <span class="entry-card-wordcount">402 words</span>
+            </div>
+            <div class="entry-card-title entry-card-title-red">Feeling Overwhelmed</div>
+            <div class="entry-card-tags">😟 Stressed <span>mental health • work</span></div>
+            <div class="entry-card-desc">The deadline pressure is real. Tried Pomodoro technique — helped a bit. Realized I need to delegate more. Wrote down 3 action items for tomorrow...</div>
+        </div>
+    </div>
+    <div class="entries-pagination">
+        « Previous 1 2 3 ... 5 Next »
+    </div>
+</div>

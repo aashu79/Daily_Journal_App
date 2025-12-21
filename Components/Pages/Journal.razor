@@ -1,0 +1,109 @@
+﻿@page "/journal"
+
+<div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
+    <h3 class="mb-4">📓 Daily Journal</h3>
+
+    @if (entry == null)
+    {
+        <div class="empty-state p-4 text-center" style="border: 1px dashed #ccc; border-radius: 8px;">
+            <p class="text-muted">No entry for today.</p>
+            <button class="btn btn-primary mt-2" @onclick="CreateEntry">Start Writing</button>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header bg-light">
+                <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
+                @if (entry.Timestamp != default)
+                {
+                    <small class="d-block text-muted">Last saved: @entry.Timestamp.ToString("HH:mm")</small>
+                }
+            </div>
+            <div class="card-body">
+                <!-- Mood -->
+                <div class="mb-3">
+                    <label class="form-label">How are you feeling today?</label>
+                    <select class="form-select" @bind="entry.PrimaryMood">
+                        <option value="">— Select —</option>
+                        <option value="Happy">Happy 😊</option>
+                        <option value="Sad">Sad 😢</option>
+                        <option value="Calm">Calm 🧘</option>
+                        <option value="Excited">Excited 🎉</option>
+                        <option value="Anxious">Anxious 😰</option>
+                        <option value="Tired">Tired 😴</option>
+                        <option value="Grateful">Grateful 🙏</option>
+                        <option value="Neutral">Neutral 😐</option>
+                    </select>
+                </div>
+
+                <!-- Content -->
+                <div class="mb-3">
+                    <label class="form-label">Your thoughts for today</label>
+                    <textarea class="form-control"
+                              rows="10"
+                              @bind="entry.Content"
+                              placeholder="Write freely — no formatting needed."></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div class="mb-3">
+                    <label class="form-label">Tags (optional)</label>
+                    <input type="text" class="form-control"
+                           @bind="entry.TagsString"
+                           placeholder="e.g., work, family, gratitude" />
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-danger" @onclick="Delete">Delete</button>
+                    <button class="btn btn-success" @onclick="Save">Save</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private JournalEntry entry;
+
+    private class JournalEntry
+    {
+        public DateTime Date { get; set; } = DateTime.Today;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public string Content { get; set; } = "";
+        public string PrimaryMood { get; set; } = "";
+        public string TagsString { get; set; } = "";
+    }
+
+    protected override void OnInitialized()
+    {
+        // Simulate: no entry by default
+        entry = null;
+    }
+
+    private void CreateEntry()
+    {
+        entry = new JournalEntry { Date = DateTime.Today };
+    }
+
+    private void Save()
+    {
+        if (!string.IsNullOrWhiteSpace(entry?.Content))
+        {
+            entry.Timestamp = DateTime.Now;
+            // ✅ TODO: Save to local storage / DB later
+        }
+    }
+
+    private void Delete()
+    {
+        entry = null;
+    }
+}
+
+<style>
+    .empty-state {
+        background-color: #f9f9f9;
+    }
+</style>

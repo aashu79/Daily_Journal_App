@@ -1,0 +1,50 @@
+﻿@page "/write"
+@* Write Entry Page *@
+<div class="write-entry-layout">
+    <div class="write-entry-main">
+        <h1>New Entry - December 21, 2025</h1>
+        <label class="write-entry-label">
+            Title (max 60 characters)
+            <input class="write-entry-title" placeholder="[Enter title here]" maxlength="60" />
+        </label>
+        <div class="write-entry-toolbar">
+            <button>B</button><button>I</button><button>U</button>
+            <span class="sep">|</span><button>•</button><button>1.</button>
+            <button>#</button><span class="sep">|</span><button>🔗</button>
+        </div>
+        <textarea class="write-entry-body" placeholder="[Write your journal entry here...]"></textarea>
+        <div class="write-entry-meta">
+            <div>Created: --</div>
+            <div>Last Modified: --</div>
+        </div>
+        <div class="write-entry-actions">
+            <button class="secondary">Cancel</button>
+            <button class="secondary">← Back</button>
+        </div>
+    </div>
+    <form class="write-entry-details" autocomplete="off">
+        <h2>Entry Details</h2>
+        <label>
+            Primary Mood *
+            <select>
+                <option>Select mood ▼</option>
+                <option>Happy</option>
+                <option>Stressed</option>
+                <option>Calm</option>
+            </select>
+            <div class="write-entry-mood-helper">Positive | Neutral | Negative</div>
+        </label>
+        <label>
+            Secondary Moods (up to 2)
+            <button type="button" class="sec-mood-btn">+ Add secondary mood</button>
+        </label>
+        <label>
+            Tags
+            <input class="write-entry-tags" placeholder="[Type to search or add custom tags]" />
+            <div class="write-entry-tags-list">work personal reflection</div>
+        </label>
+        <div class="write-entry-wordcount">Word Count: 0</div>
+        <button type="button" class="secondary">Save as Draft</button>
+        <button type="submit" class="savebtn">Save Entry</button>
+    </form>
+</div>
