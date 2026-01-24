@@ -1,40 +1,174 @@
 ﻿@page "/dashboard"
-@* Dashboard Page *@
+@using Daily_Journal_App.Services
+@using Daily_Journal_App.Models
+@inject NavigationManager Navigation
+@inject JournalService JournalService
+
 <div class="ds-dashboard-main">
     <h1>Dashboard</h1>
-    <div class="ds-dashboard-date">Sunday, December 21, 2025</div>
+    <div class="ds-dashboard-date">@DateTime.Today.ToString("dddd, MMMM dd, yyyy")</div>
 
     <div class="ds-dashboard-stats-row">
         <div class="ds-dashboard-stat">
             <div class="ds-dashboard-stat-label">Current Streak</div>
-            <div class="ds-dashboard-stat-value">0 days</div>
+            <div class="ds-dashboard-stat-value">@currentStreak days</div>
         </div>
         <div class="ds-dashboard-stat">
             <div class="ds-dashboard-stat-label">Total Entries</div>
-            <div class="ds-dashboard-stat-value">12</div>
+            <div class="ds-dashboard-stat-value">@totalEntries</div>
         </div>
         <div class="ds-dashboard-stat">
             <div class="ds-dashboard-stat-label">Words Written</div>
-            <div class="ds-dashboard-stat-value">3,247</div>
+            <div class="ds-dashboard-stat-value">@totalWords.ToString("N0")</div>
         </div>
     </div>
 
     <h2 class="ds-dashboard-section">Quick Actions</h2>
     <div class="ds-dashboard-quick-actions">
-        <button class="ds-dashboard-primary"><span>✏️</span> Write Today's Entry</button>
+        <button class="ds-dashboard-primary" @onclick="GoToJournal">
+            <span>✏️</span> Write Today's Entry
+        </button>
         <div class="ds-dashboard-secondary-actions">
-            <button><span>📚</span> View All Entries</button>
-            <button><span>📊</span> View Statistics</button>
+            <button @onclick="GoToEntries">
+                <span>📚</span> View All Entries
+            </button>
+            <button @onclick="GoToAnalytics">
+                <span>📊</span> View Statistics
+            </button>
         </div>
     </div>
 
-    <h2 class="ds-dashboard-section">Recent Entry</h2>
-    <div class="ds-dashboard-recent-entry">
-        <div class="ds-dashboard-recent-entry-date"><b>December 20, 2025</b></div>
-        <div class="ds-dashboard-recent-entry-title">
-            A Productive Day
-            <span class="ds-mini-mood">😊 Happy</span>
+    @if (recentEntry != null)
+    {
+        <h2 class="ds-dashboard-section">Recent Entry</h2>
+        <div class="ds-dashboard-recent-entry clickable" @onclick="HandleViewRecentEntry">
+            <div class="ds-dashboard-recent-entry-date"><b>@recentEntry.Date.ToString("MMMM dd, yyyy")</b></div>
+            <div class="ds-dashboard-recent-entry-title">
+                @recentEntry.Title
+                <span class="ds-mini-mood">@GetMoodEmoji(recentEntry.PrimaryMood) @recentEntry.PrimaryMood</span>
+            </div>
+            <div class="ds-dashboard-recent-entry-meta">@GetWordCount(recentEntry.Content) words</div>
         </div>
-        <div class="ds-dashboard-recent-entry-meta">245 words</div>
-    </div>
+    }
+    else
+    {
+        <h2 class="ds-dashboard-section">Recent Entry</h2>
+        <div class="ds-dashboard-recent-entry">
+            <p style="text-align: center; color: #888;">No entries yet. Start writing your first journal entry!</p>
+        </div>
+    }
 </div>
+
+@code {
+    private int totalEntries = 0;
+    private int totalWords = 0;
+    private int currentStreak = 0;
+    private JournalEntry? recentEntry;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            var entries = await JournalService.GetEntriesAsync();
+            
+            totalEntries = entries.Count;
+            totalWords = entries.Sum(e => GetWordCount(e.Content));
+            currentStreak = CalculateStreak(entries);
+            
+            recentEntry = entries.OrderByDescending(e => e.Date)
+                .ThenByDescending(e => e.CreatedAt)
+                .FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+        }
+    }
+
+    private int CalculateStreak(List<JournalEntry> entries)
+    {
+        if (!entries.Any()) return 0;
+
+        var sortedDates = entries
+            .Select(e => e.Date.Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToList();
+
+        if (!sortedDates.Any()) return 0;
+
+        var today = DateTime.Today;
+        var mostRecent = sortedDates.First();
+        
+        if (mostRecent < today.AddDays(-1))
+            return 0;
+
+        int streak = 0;
+        var currentDate = today;
+
+        foreach (var date in sortedDates)
+        {
+            if (date == currentDate || date == currentDate.AddDays(-1))
+            {
+                streak++;
+                currentDate = date.AddDays(-1);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return streak;
+    }
+
+    private int GetWordCount(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return 0;
+
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    private string GetMoodEmoji(string mood)
+    {
+        return mood switch
+        {
+            "Happy" => "😊",
+            "Sad" => "😢",
+            "Calm" => "🧘",
+            "Excited" => "🎉",
+            "Anxious" => "😰",
+            "Grateful" => "🙏",
+            "Tired" => "😴",
+            "Angry" => "😠",
+            "Stressed" => "😟",
+            "Confident" => "💪",
+            "Relaxed" => "😌",
+            "Thoughtful" => "🤔",
+            "Curious" => "🧐",
+            "Nostalgic" => "💭",
+            "Bored" => "😑",
+            "Lonely" => "😔",
+            _ => "📝"
+        };
+    }
+
+    private void HandleViewRecentEntry()
+    {
+        if (recentEntry != null)
+        {
+            Navigation.NavigateTo($"/journal/{recentEntry.Id}");
+        }
+    }
+
+    private void GoToJournal() => Navigation.NavigateTo("/journal");
+    private void GoToEntries() => Navigation.NavigateTo("/entries");
+    private void GoToAnalytics() => Navigation.NavigateTo("/analytics");
+}

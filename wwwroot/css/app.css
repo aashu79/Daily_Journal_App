@@ -86,3 +86,182 @@ h1:focus {
         padding-left: env(safe-area-inset-left);
     }
 }
+
+/* Write Entry improved UI */
+.write-entry-layout.improved-ui {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    align-items: start;
+}
+
+.write-entry-main {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.write-entry-details {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 1rem;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.write-entry-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.write-entry-title {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    border: 1px solid #e6e9ef;
+    border-radius: 6px;
+    margin-top: 0.4rem;
+    font-size: 1rem;
+}
+
+.quill-container {
+    height: 320px;
+    border: 1px solid #e6e9ef;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 0.4rem;
+}
+
+.write-entry-meta {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 1rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.write-entry-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.secondary {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.savebtn {
+    background: linear-gradient(90deg,#4f46e5,#06b6d4);
+    color: white;
+    padding: 0.55rem 0.9rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.write-entry-tags {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #e6e9ef;
+    border-radius: 6px;
+    margin-top: 0.35rem;
+}
+
+.write-entry-tags-list {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.tag-badge {
+    background: #eef2ff;
+    color: #3730a3;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.error-message, .success-message {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+    cursor: pointer;
+}
+
+.error-message { background: #fff5f5; color:#9f1239; border:1px solid #fecaca; }
+.success-message { background: #ecfeff; color:#064e3b; border:1px solid #bbf7d0; }
+
+/* Write Entry improved UI - updated black/white theme */
+.write-entry-layout.improved-ui.bw-theme {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    align-items: start;
+    background: #fff;
+    color: #111;
+}
+
+.write-entry-main {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    box-shadow: none;
+    border: 1px solid #e6e9ef;
+}
+
+.write-entry-details.improved-details {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1rem;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border: 1px solid #e6e9ef;
+}
+
+.write-entry-label { font-weight: 600; display:block; margin-bottom: 0.6rem; }
+
+.quill-container { height: 380px; border:1px solid #e6e9ef; border-radius:6px; margin-top:0.4rem; }
+
+.secondary.bw-btn { background: #000; color: #fff; border: none; padding:0.5rem 0.8rem; border-radius:6px; cursor:pointer; }
+.savebtn.bw-save { background: #000; color: #fff; padding:0.55rem 0.9rem; border-radius:6px; border:none; cursor:pointer; }
+
+.secondary.bw-btn:hover, .savebtn.bw-save:hover { opacity: 0.9; }
+
+/* details column inputs spacing */
+.write-entry-details label { display:block; margin-bottom:0.6rem; }
+.write-entry-details select, .write-entry-details input { width:100%; padding:0.45rem 0.6rem; border:1px solid #e6e9ef; border-radius:6px; }
+
+.secondary-moods { display:flex; gap:0.5rem; }
+
+/* Analytics mood bars to BW variants */
+.mood-bar { height: 12px; border-radius: 6px; }
+
+/* Error / success style adjustments for BW */
+.error-message { background: #fff; color: #900; border:1px solid #f5c6cb; }
+.success-message { background: #fff; color:#060; border:1px solid #c3e6cb; }
+
+@media (max-width: 900px) {
+    .write-entry-layout.improved-ui.bw-theme { grid-template-columns: 1fr; }
+    .quill-container { height: 260px; }
+}

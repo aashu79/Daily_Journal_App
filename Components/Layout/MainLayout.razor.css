@@ -1,146 +1,171 @@
-/* ===== DailyScript Layout — Clean, Journal-Focused UI ===== */
-
+/* Root */
 .dailyscript-layout {
     display: flex;
     height: 100vh;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* Light Theme (Default) */
+.light-theme {
+    background: #fff;
+    color: #000;
+}
+
+.light-theme .ds-sidebar {
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+}
+
+.light-theme .ds-nav-link {
+    color: #222;
+}
+
+.light-theme .ds-nav-link:hover {
+    background: #e9e9e9;
+}
+
+.light-theme .ds-nav-link.active {
+    background: #000;
+    color: #fff;
+}
+
+.light-theme .ds-content {
+    background: #fff;
+    color: #000;
+}
+
+/* Dark Theme */
+.dark-theme {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.dark-theme .ds-sidebar {
+    background: #2d2d2d;
+    border-right: 1px solid #444;
+}
+
+.dark-theme .ds-nav-link {
+    color: #e0e0e0;
+}
+
+.dark-theme .ds-nav-link:hover {
+    background: #3a3a3a;
+}
+
+.dark-theme .ds-nav-link.active {
+    background: #667eea;
+    color: #fff;
+}
+
+.dark-theme .ds-content {
+    background: #1a1a1a;
+    color: #e0e0e0;
+}
+
+.dark-theme .card {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dark-theme .ds-sidebar-footer {
+    border-top-color: #444;
+}
+
+.dark-theme .ds-sidebar-header {
+    border-bottom-color: #444;
 }
 
 /* Sidebar */
 .ds-sidebar {
     width: 240px;
-    background-color: #f5f5f5;
-    border-right: 1px solid #e0e0e0;
     display: flex;
     flex-direction: column;
-    z-index: 1030;
     flex-shrink: 0;
 }
 
+/* Header */
 .ds-sidebar-header {
-    padding: 16px 12px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 20px 14px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
 }
 
 .ds-logo {
-    font-size: 18px;
-    font-weight: 600;
-    color: #000;
-    margin: 0;
-    text-align: center;
+    font-weight: 700;
+    font-size: 1.2rem;
 }
 
+/* Navigation */
 .ds-nav {
-    flex-grow: 1;
+    flex: 1;
     padding: 8px 0;
 }
 
-.ds-sidebar-footer {
-    padding: 8px 0;
-    border-top: 1px solid #e0e0e0;
-}
-
-/* Nav Links */
 .ds-nav-link {
     display: flex;
     align-items: center;
+    gap: 10px;
     padding: 12px 16px;
     text-decoration: none;
-    color: #333;
     font-size: 14px;
-    font-weight: 400;
-    transition: background-color 0.2s;
-    gap: 12px;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    transition: all 0.2s ease;
 }
-
-    .ds-nav-link:hover {
-        background-color: #e9ecef;
-    }
-
-    .ds-nav-link.active,
-    .ds-nav-link:active {
-        background-color: #000 !important;
-        color: #fff !important;
-        font-weight: 500;
-    }
 
 .ds-nav-icon {
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
+    font-size: 1.2rem;
 }
 
-/* Mobile sidebar toggle */
-@media (max-width: 991.98px) {
-    .ds-sidebar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        transform: translateX(-100%);
-        transition: transform 0.3s;
-    }
+/* Footer */
+.ds-sidebar-footer {
+    border-top: 1px solid #ddd;
+    padding: 8px 0;
+}
 
-        .ds-sidebar.ds-sidebar--open {
-            transform: translateX(0);
-        }
+.theme-toggle, .logout-btn {
+    font-size: 14px;
 }
 
 /* Main Area */
 .ds-main {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    flex: 1;
     min-width: 0;
 }
 
-/* Top Bar */
-.ds-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    height: 36px;
-    background-color: #efefef;
-    border-bottom: 1px solid #ccc;
-    font-size: 16px;
-    font-weight: 600;
-    color: #000;
-}
-
-.ds-topbar-left,
-.ds-topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-/* Content Area */
+/* Content */
 .ds-content {
     flex: 1;
     overflow-y: auto;
-    background-color: #fff;
-    padding: 0;
+    padding: 16px;
 }
 
-    .ds-content::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .ds-content::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 3px;
-    }
-
-/* Border/frame for the whole app like the screenshot */
-.dailyscript-layout {
-    border: 1px solid #888;
-    box-sizing: border-box;
-}
-
-@media (max-width: 600px) {
+/* Responsive */
+@media (max-width: 900px) {
     .ds-sidebar {
-        width: 90vw;
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .ds-sidebar {
+        width: 70px;
+    }
+    
+    .ds-nav-link span:not(.ds-nav-icon) {
+        display: none;
+    }
+    
+    .ds-logo {
+        font-size: 1.5rem;
     }
 }

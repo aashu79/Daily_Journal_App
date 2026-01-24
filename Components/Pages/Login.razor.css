@@ -84,3 +84,78 @@
             background: #f3f3f3;
             color: #555;
         }
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    min-width: 350px;
+}
+
+.login-box h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.login-box p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.pin-input-group {
+    margin-bottom: 20px;
+}
+
+.pin-input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    letter-spacing: 10px;
+}
+
+.pin-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.login-btn:hover {
+    background: #5568d3;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #ffeaea;
+    border-radius: 5px;
+}
+
+.hint-text {
+    margin-top: 20px;
+    color: #999;
+}

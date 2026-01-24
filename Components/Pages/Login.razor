@@ -1,18 +1,71 @@
 ﻿@page "/login"
-@* Login Page *@
-<div class="ds-login-layout">
-    <div class="ds-login-form">
-        <h1>DailyScript</h1>
-        <div class="ds-login-sub">Secure Daily Journaling</div>
-        <label class="ds-login-pinlabel">Enter 4-Digit PIN</label>
-        <div class="ds-login-pin-display">
-            <span>●</span><span>●</span><span>●</span><span>●</span>
+@using Daily_Journal_App.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <div class="login-box">
+        <h1>🔒 Daily Journal</h1>
+        <p>Enter your PIN to access your journal</p>
+        
+        <div class="pin-input-group">
+            <input type="password" 
+                   class="pin-input" 
+                   @bind="pinInput" 
+                   placeholder="Enter 4-digit PIN"
+                   maxlength="4"
+                   @onkeypress="HandleKeyPress" />
         </div>
-        <div class="ds-login-pad">
-            <button>1</button><button>2</button><button>3</button>
-            <button>4</button><button>5</button><button>6</button>
-            <button>7</button><button>8</button><button>9</button>
-            <button class="clear">Clear</button><button>0</button><button class="enter">Enter</button>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">@errorMessage</div>
+        }
+
+        <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
+        
+        <div class="hint-text">
+            <small>@AuthService.GetPINHint()</small>
         </div>
     </div>
 </div>
+
+@code {
+    private string pinInput = "";
+    private string errorMessage = "";
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await OnLogin();
+        }
+    }
+
+    private async Task OnLogin()
+    {
+        errorMessage = "";
+
+        if (string.IsNullOrWhiteSpace(pinInput))
+        {
+            errorMessage = "Please enter your PIN";
+            return;
+        }
+
+        if (pinInput.Length != 4)
+        {
+            errorMessage = "PIN must be 4 digits";
+            return;
+        }
+
+        if (AuthService.ValidatePIN(pinInput))
+        {
+            Navigation.NavigateTo("/dashboard");
+        }
+        else
+        {
+            errorMessage = "Incorrect PIN. Please try again.";
+            pinInput = "";
+        }
+    }
+}
