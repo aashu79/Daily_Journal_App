@@ -1,29 +1,91 @@
+using Daily_Journal_App.Models;
+
 namespace Daily_Journal_App.Services;
 
 public class AuthService
 {
-    private const string HARDCODED_PIN = "1234"; // Simple hardcoded PIN
+    private readonly UserService _userService;
     private bool isAuthenticated = false;
+    private User? currentUser = null;
+
+    public AuthService(UserService userService)
+    {
+        _userService = userService;
+    }
 
     public bool IsAuthenticated => isAuthenticated;
+    public User? CurrentUser => currentUser;
 
-    public bool ValidatePIN(string pin)
+    public async Task<bool> UserExistsAsync()
     {
-        if (pin == HARDCODED_PIN)
+        return await _userService.UserExistsAsync();
+    }
+
+    public async Task<bool> RegisterUserAsync(string name, string otp)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(otp))
+            {
+                return false;
+            }
+
+            if (otp.Length != 4 || !otp.All(char.IsDigit))
+            {
+                return false;
+            }
+
+            var result = await _userService.CreateUserAsync(name, otp);
+            return result > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> ValidateOTPAsync(string otp)
+    {
+        if (string.IsNullOrWhiteSpace(otp))
+        {
+            return false;
+        }
+
+        var isValid = await _userService.ValidateOTPAsync(otp);
+        if (isValid)
         {
             isAuthenticated = true;
-            return true;
+            currentUser = await _userService.GetUserAsync();
         }
-        return false;
+        return isValid;
     }
 
     public void Logout()
     {
         isAuthenticated = false;
+        currentUser = null;
     }
 
-    public string GetPINHint()
+    public string GetUserName()
     {
-        return "Hint: PIN is 1234";
+        return currentUser?.Name ?? "User";
+    }
+
+    public async Task<bool> UpdateOTPAsync(string newOtp)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(newOtp) || newOtp.Length != 4 || !newOtp.All(char.IsDigit))
+            {
+                return false;
+            }
+
+            var result = await _userService.UpdateOTPAsync(newOtp);
+            return result > 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

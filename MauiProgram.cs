@@ -52,6 +52,20 @@ namespace Daily_Journal_App
                 }
             });
 
+            // Register UserService
+            builder.Services.AddSingleton<UserService>(s =>
+            {
+                try
+                {
+                    return new UserService(dbPath);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating UserService: {ex.Message}");
+                    throw;
+                }
+            });
+
             // Register Auth and Theme services
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<ThemeService>();

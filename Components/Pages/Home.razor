@@ -1,26 +1,19 @@
 ﻿@page "/"
+@using Daily_Journal_App.Services
 @inject NavigationManager Navigation
+@inject AuthService AuthService
 
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center;">
-    <h1 style="font-size: 3rem; margin-bottom: 20px;">Welcome to DailyScript</h1>
-    <p style="font-size: 1.2rem; margin-bottom: 40px;">Your personal journal companion</p>
-    
-    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-        <button @onclick='() => Navigation.NavigateTo("/dashboard")' 
-                style="padding: 15px 30px; font-size: 1.1rem; background: #000; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-            Go to Dashboard
-        </button>
-        <button @onclick='() => Navigation.NavigateTo("/write")' 
-                style="padding: 15px 30px; font-size: 1.1rem; background: #fff; color: #000; border: 2px solid #000; border-radius: 8px; cursor: pointer;">
-            Write an Entry
-        </button>
-        <button @onclick='() => Navigation.NavigateTo("/db-info")' 
-                style="padding: 15px 30px; font-size: 1.1rem; background: #17a2b8; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-            Database Info
-        </button>
-        <button @onclick='() => Navigation.NavigateTo("/test-db")' 
-                style="padding: 15px 30px; font-size: 1.1rem; background: #28a745; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
-            Test Database
-        </button>
-    </div>
-</div>
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Redirect to login if not authenticated
+        if (!AuthService.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+        
+        // If authenticated, redirect to dashboard
+        Navigation.NavigateTo("/dashboard");
+    }
+}

@@ -6,66 +6,204 @@
 <div class="login-container">
     <div class="login-box">
         <h1>🔒 Daily Journal</h1>
-        <p>Enter your PIN to access your journal</p>
         
-        <div class="pin-input-group">
-            <input type="password" 
-                   class="pin-input" 
-                   @bind="pinInput" 
-                   placeholder="Enter 4-digit PIN"
-                   maxlength="4"
-                   @onkeypress="HandleKeyPress" />
-        </div>
+        @if (isRegistrationMode)
+        {
+            <p>Create your account to get started</p>
+            
+            <div class="registration-form">
+                <div class="input-group mb-3">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" 
+                           class="form-control" 
+                           @bind="userName" 
+                           placeholder="Enter your name"
+                           maxlength="50" />
+                </div>
+                
+                <div class="input-group mb-3">
+                    <label class="form-label">Create 4-digit OTP</label>
+                    <input type="password" 
+                           class="form-control" 
+                           @bind="otpInput" 
+                           placeholder="Enter 4-digit OTP"
+                           maxlength="4"
+                           @onkeypress="HandleKeyPress" />
+                </div>
+                
+                <div class="input-group mb-3">
+                    <label class="form-label">Confirm OTP</label>
+                    <input type="password" 
+                           class="form-control" 
+                           @bind="confirmOtp" 
+                           placeholder="Confirm your OTP"
+                           maxlength="4"
+                           @onkeypress="HandleKeyPress" />
+                </div>
+            </div>
+            
+            <button class="login-btn" @onclick="OnRegister">Create Account</button>
+        }
+        else
+        {
+            <p>Welcome back, @userNameDisplay!</p>
+            
+            <div class="pin-input-group">
+                <input type="password" 
+                       class="pin-input" 
+                       @bind="otpInput" 
+                       placeholder="Enter 4-digit OTP"
+                       maxlength="4"
+                       @onkeypress="HandleKeyPress" />
+            </div>
+            
+            <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
+        }
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="error-message">@errorMessage</div>
         }
 
-        <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
-        
-        <div class="hint-text">
-            <small>@AuthService.GetPINHint()</small>
-        </div>
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="success-message">@successMessage</div>
+        }
     </div>
 </div>
 
 @code {
-    private string pinInput = "";
+    private bool isRegistrationMode = false;
+    private string userName = "";
+    private string otpInput = "";
+    private string confirmOtp = "";
     private string errorMessage = "";
+    private string successMessage = "";
+    private string userNameDisplay = "User";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckUserStatus();
+    }
+
+    private async Task CheckUserStatus()
+    {
+        try
+        {
+            isRegistrationMode = !(await AuthService.UserExistsAsync());
+            if (!isRegistrationMode)
+            {
+                userNameDisplay = AuthService.GetUserName();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error checking user status: {ex.Message}";
+        }
+    }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
-            await OnLogin();
+            if (isRegistrationMode)
+            {
+                await OnRegister();
+            }
+            else
+            {
+                await OnLogin();
+            }
+        }
+    }
+
+    private async Task OnRegister()
+    {
+        errorMessage = "";
+        successMessage = "";
+
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            errorMessage = "Please enter your name.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4)
+        {
+            errorMessage = "Please enter a valid 4-digit OTP.";
+            return;
+        }
+
+        if (!otpInput.All(char.IsDigit))
+        {
+            errorMessage = "OTP must contain only digits.";
+            return;
+        }
+
+        if (otpInput != confirmOtp)
+        {
+            errorMessage = "OTP confirmation does not match.";
+            return;
+        }
+
+        try
+        {
+            var success = await AuthService.RegisterUserAsync(userName, otpInput);
+            if (success)
+            {
+                successMessage = "Account created successfully!";
+                await Task.Delay(1000);
+                isRegistrationMode = false;
+                userNameDisplay = userName;
+                otpInput = "";
+                confirmOtp = "";
+                userName = "";
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to create account. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Registration error: {ex.Message}";
         }
     }
 
     private async Task OnLogin()
     {
         errorMessage = "";
+        successMessage = "";
 
-        if (string.IsNullOrWhiteSpace(pinInput))
+        if (string.IsNullOrWhiteSpace(otpInput))
         {
-            errorMessage = "Please enter your PIN";
+            errorMessage = "Please enter your OTP.";
             return;
         }
 
-        if (pinInput.Length != 4)
+        if (otpInput.Length != 4)
         {
-            errorMessage = "PIN must be 4 digits";
+            errorMessage = "OTP must be 4 digits.";
             return;
         }
 
-        if (AuthService.ValidatePIN(pinInput))
+        try
         {
-            Navigation.NavigateTo("/dashboard");
+            if (await AuthService.ValidateOTPAsync(otpInput))
+            {
+                Navigation.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = "Incorrect OTP. Please try again.";
+                otpInput = "";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Incorrect PIN. Please try again.";
-            pinInput = "";
+            errorMessage = $"Login error: {ex.Message}";
         }
     }
 }
