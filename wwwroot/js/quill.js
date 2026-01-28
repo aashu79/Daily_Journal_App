@@ -117,3 +117,65 @@ window.downloadFile = function(filename, content, mimeType) {
         console.error('downloadFile error:', err);
     }
 };
+
+window.exportHtmlToPdf = function(filename, htmlContent) {
+    try {
+        if (typeof html2pdf === 'undefined') {
+            console.error('html2pdf is not loaded');
+            return false;
+        }
+
+        // Create a temporary container
+        var container = document.createElement('div');
+        container.style.padding = '20px';
+        container.style.maxWidth = '800px';
+        container.innerHTML = htmlContent;
+        document.body.appendChild(container);
+
+        var opt = {
+            margin:       10,
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(container).save().then(function() {
+            document.body.removeChild(container);
+        }).catch(function(err) {
+            console.error('html2pdf error:', err);
+            document.body.removeChild(container);
+        });
+
+        return true;
+    } catch (err) {
+        console.error('exportHtmlToPdf error:', err);
+        return false;
+    }
+};
+
+window.exportElementToPdf = function(elementId, filename) {
+    try {
+        if (typeof html2pdf === 'undefined') {
+            console.error('html2pdf is not loaded');
+            return false;
+        }
+        var element = document.getElementById(elementId);
+        if (!element) return false;
+
+        var opt = {
+            margin:       10,
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'pt', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save();
+        return true;
+    }
+    catch (err) {
+        console.error('exportElementToPdf error:', err);
+        return false;
+    }
+};

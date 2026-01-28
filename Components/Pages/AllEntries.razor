@@ -15,7 +15,7 @@
     
     <div class="entries-toolbar">
         <input class="entries-search" 
-               placeholder="🔍 Search entries..." 
+               placeholder="Search entries..." 
                value="@searchQuery"
                @oninput="OnSearchInput" />
         
@@ -32,8 +32,17 @@
             <option value="oldest">Sort: Oldest First ▲</option>
             <option value="title">Sort: Title (A-Z)</option>
         </select>
-        
-        <button class="entries-newentry" @onclick="GoToWrite">+ New Entry</button>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <label class="mb-0">Per page:</label>
+            <select class="form-select form-select-sm" style="width:80px;" @onchange="OnPageSizeChanged">
+                <option value="5" selected="@(pageSize==5)">5</option>
+                <option value="10" selected="@(pageSize==10)">10</option>
+                <option value="25" selected="@(pageSize==25)">25</option>
+                <option value="50" selected="@(pageSize==50)">50</option>
+            </select>
+            <button class="entries-newentry" @onclick="GoToWrite">+ New Entry</button>
+        </div>
     </div>
 
     @if (isLoading)
@@ -77,23 +86,27 @@
 
         @if (totalPages > 1)
         {
-            <div class="entries-pagination">
-                @if (currentPage > 1)
-                {
-                    <button class="pagination-btn" @onclick="@(() => ChangePage(currentPage - 1))">« Previous</button>
-                }
-                
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    var pageNumber = i;
-                    <button class="pagination-btn @(currentPage == pageNumber ? "active" : "")" 
-                            @onclick="@(() => ChangePage(pageNumber))">@pageNumber</button>
-                }
-                
-                @if (currentPage < totalPages)
-                {
-                    <button class="pagination-btn" @onclick="@(() => ChangePage(currentPage + 1))">Next »</button>
-                }
+            <div class="entries-pagination d-flex justify-content-between align-items-center mt-3">
+                <div class="pagination-controls btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ChangePage(1)" disabled="@(currentPage==1)">First</button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ChangePage(currentPage - 1)" disabled="@(currentPage==1)">Previous</button>
+                </div>
+
+                <div class="pagination-pages">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <button class="btn btn-sm @(currentPage==i?"btn-primary":"btn-outline-secondary") mx-1" @onclick="() => ChangePage(i)">@i</button>
+                    }
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <div>Showing @((currentPage-1)*pageSize + 1) - @Math.Min(currentPage*pageSize, filteredEntries.Count) of @filteredEntries.Count</div>
+                    <div>Page <strong>@currentPage</strong> of <strong>@(Math.Max(1, totalPages))</strong></div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => ChangePage(currentPage + 1)" disabled="@(currentPage==totalPages)">Next</button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="() => ChangePage(totalPages)" disabled="@(currentPage==totalPages)">Last</button>
+                    </div>
+                </div>
             </div>
         }
     }
@@ -111,7 +124,7 @@
 
     private int currentPage = 1;
     private int pageSize = 10;
-    private int totalPages => (int)Math.Ceiling(filteredEntries.Count / (double)pageSize);
+    private int totalPages => filteredEntries.Count == 0 ? 0 : (int)Math.Ceiling(filteredEntries.Count / (double)pageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,6 +168,16 @@
         ApplyFilters();
     }
 
+    private void OnPageSizeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var newSize) && newSize > 0)
+        {
+            pageSize = newSize;
+            // After changing page size, reset to first page to avoid out-of-range pages
+            currentPage = 1;
+        }
+    }
+
     private void ApplyFilters()
     {
         filteredEntries = allEntries.ToList();
@@ -185,23 +208,31 @@
             _ => filteredEntries.OrderByDescending(e => e.Date).ThenByDescending(e => e.CreatedAt).ToList()
         };
 
-        currentPage = 1;
+        // Reset current page if out of range
+        if (currentPage < 1) currentPage = 1;
+        if (totalPages > 0 && currentPage > totalPages) currentPage = totalPages;
+        if (totalPages == 0) currentPage = 1;
     }
 
     private List<JournalEntry> GetPagedEntries()
     {
-        return filteredEntries
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
+        if (!filteredEntries.Any()) return new List<JournalEntry>();
+        var skip = (currentPage - 1) * pageSize;
+        if (skip < 0) skip = 0;
+        if (skip >= filteredEntries.Count)
+        {
+            currentPage = totalPages > 0 ? totalPages : 1;
+            skip = (currentPage - 1) * pageSize;
+        }
+        return filteredEntries.Skip(skip).Take(pageSize).ToList();
     }
 
     private void ChangePage(int page)
     {
-        if (page >= 1 && page <= totalPages)
-        {
-            currentPage = page;
-        }
+        if (totalPages == 0) return;
+        var target = Math.Max(1, Math.Min(page, totalPages));
+        if (target == currentPage) return;
+        currentPage = target;
     }
 
     private void ViewEntry(int id)
