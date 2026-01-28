@@ -66,6 +66,40 @@ namespace Daily_Journal_App
                 }
             });
 
+            // Register MoodService
+            builder.Services.AddSingleton<MoodService>(s =>
+            {
+                try
+                {
+                    var service = new MoodService(dbPath);
+                    // Prepopulate moods
+                    Task.Run(() => service.PrepopulateMoodsAsync()).Wait();
+                    return service;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating MoodService: {ex.Message}");
+                    throw;
+                }
+            });
+
+            // Register TagService
+            builder.Services.AddSingleton<TagService>(s =>
+            {
+                try
+                {
+                    var service = new TagService(dbPath);
+                    // Prepopulate tags
+                    Task.Run(() => service.PrepopulateTagsAsync()).Wait();
+                    return service;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating TagService: {ex.Message}");
+                    throw;
+                }
+            });
+
             // Register Auth and Theme services
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<ThemeService>();

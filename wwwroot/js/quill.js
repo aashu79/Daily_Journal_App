@@ -35,9 +35,16 @@ window.initQuillEditor = function(elementId, dotNetRef) {
             if (dotNetRef && typeof dotNetRef.invokeMethodAsync === 'function') {
                 window.quillEditor.on('text-change', function() {
                     try {
-                        dotNetRef.invokeMethodAsync('OnQuillTextChanged');
+                        // Check if the reference is still valid
+                        if (dotNetRef && typeof dotNetRef.invokeMethodAsync === 'function') {
+                            dotNetRef.invokeMethodAsync('OnQuillTextChanged');
+                        }
                     } catch (err) {
                         console.error('Error invoking .NET method from Quill text-change:', err);
+                        // Remove the event listener if it fails
+                        if (window.quillEditor) {
+                            try { window.quillEditor.off('text-change'); } catch(e) {}
+                        }
                     }
                 });
             }

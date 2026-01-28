@@ -2,6 +2,8 @@
 @using Daily_Journal_App.Services
 @using Daily_Journal_App.Models
 @inject JournalService JournalService
+@inject MoodService MoodService
+@inject TagService TagService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -19,22 +21,10 @@
         
         <select class="entries-filter" value="@moodFilter" @onchange="OnMoodFilterChange">
             <option value="">All Moods</option>
-            <option value="Happy">Happy</option>
-            <option value="Sad">Sad</option>
-            <option value="Calm">Calm</option>
-            <option value="Excited">Excited</option>
-            <option value="Anxious">Anxious</option>
-            <option value="Grateful">Grateful</option>
-            <option value="Confident">Confident</option>
-            <option value="Relaxed">Relaxed</option>
-            <option value="Thoughtful">Thoughtful</option>
-            <option value="Curious">Curious</option>
-            <option value="Nostalgic">Nostalgic</option>
-            <option value="Bored">Bored</option>
-            <option value="Angry">Angry</option>
-            <option value="Stressed">Stressed</option>
-            <option value="Lonely">Lonely</option>
-            <option value="Tired">Tired</option>
+            @foreach (var mood in allMoods)
+            {
+                <option value="@mood.Name">@mood.Name</option>
+            }
         </select>
         
         <select class="entries-sort" value="@sortOrder" @onchange="OnSortOrderChange">
@@ -63,26 +53,23 @@
             @foreach (var entry in GetPagedEntries())
             {
                 <div class="entry-card">
-                    <div class="entry-card-header" @onclick="@(() => ViewEntry(entry.Id))">
-                        <span class="entry-card-date">@entry.Date.ToString("MMMM dd, yyyy")</span>
-                        <span class="entry-card-wordcount">@GetWordCount(entry.Content) words</span>
-                    </div>
-                    <div class="entry-card-title @(GetMoodColor(entry.PrimaryMood))" @onclick="@(() => ViewEntry(entry.Id))">@entry.Title</div>
-                    <div class="entry-card-tags" @onclick="@(() => ViewEntry(entry.Id))">
-                        @GetMoodEmoji(entry.PrimaryMood) @entry.PrimaryMood 
-                        @if (!string.IsNullOrWhiteSpace(entry.Tags))
-                        {
-                            <span>• @entry.Tags.Replace(",", " • ")</span>
-                        }
-                    </div>
-                    @if (!string.IsNullOrWhiteSpace(entry.Content))
-                    {
-                        <div class="entry-card-desc" @onclick="@(() => ViewEntry(entry.Id))">@GetPreview(entry.Content)</div>
-                    }
+                    <div class="entry-card-header d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="entry-card-title @(GetMoodColor(entry.PrimaryMood))">@entry.Title</div>
+                            <div class="entry-card-meta">@entry.Date.ToString("yyyy-MM-dd") - @entry.PrimaryMood</div>
+                        </div>
 
-                    <div class="entry-card-actions">
-                        <button class="edit-btn" @onclick="@(() => EditEntry(entry.Id))">Edit</button>
-                        <button class="delete-btn" @onclick="@(() => DeleteEntry(entry))">Delete</button>
+                        <div class="entry-card-actions d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewEntryView(entry.Id)">View</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditEntry(entry.Id)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteEntry(entry)">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="entry-card-body mt-2">
+                        <div class="entry-card-preview">@GetPreview(entry.Content, 200)</div>
+                        <div class="entry-card-tags text-muted mt-2">@string.Join(" • ", (entry.Tags ?? string.Empty).Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))</div>
+                        <div class="entry-card-wordcount text-muted">Words: @GetWordCount(entry.Content)</div>
                     </div>
                 </div>
             }
@@ -115,6 +102,7 @@
 @code {
     private List<JournalEntry> allEntries = new();
     private List<JournalEntry> filteredEntries = new();
+    private List<Mood> allMoods = new();
     private string searchQuery = "";
     private string moodFilter = "";
     private string sortOrder = "newest";
@@ -135,6 +123,7 @@
         try
         {
             isLoading = true;
+            allMoods = await MoodService.GetAllMoodsAsync();
             allEntries = await JournalService.GetEntriesAsync();
             ApplyFilters();
         }
@@ -174,18 +163,18 @@
         {
             var query = searchQuery.ToLower();
             filteredEntries = filteredEntries.Where(e =>
-                e.Title.ToLower().Contains(query) ||
-                e.Content.ToLower().Contains(query) ||
-                e.Tags.ToLower().Contains(query) ||
-                e.PrimaryMood.ToLower().Contains(query)
+                (e.Title ?? string.Empty).ToLower().Contains(query) ||
+                (e.Content ?? string.Empty).ToLower().Contains(query) ||
+                (e.Tags ?? string.Empty).ToLower().Contains(query) ||
+                (e.PrimaryMood ?? string.Empty).ToLower().Contains(query)
             ).ToList();
         }
 
         if (!string.IsNullOrWhiteSpace(moodFilter))
         {
             filteredEntries = filteredEntries.Where(e =>
-                e.PrimaryMood.Equals(moodFilter, StringComparison.OrdinalIgnoreCase) ||
-                e.SecondaryMoods.Contains(moodFilter, StringComparison.OrdinalIgnoreCase)
+                (e.PrimaryMood ?? string.Empty).Equals(moodFilter, StringComparison.OrdinalIgnoreCase) ||
+                (e.SecondaryMoods ?? string.Empty).Contains(moodFilter, StringComparison.OrdinalIgnoreCase)
             ).ToList();
         }
 
@@ -220,9 +209,14 @@
         Navigation.NavigateTo($"/journal/{id}");
     }
 
+    private void ViewEntryView(int id)
+    {
+        Navigation.NavigateTo($"/journals/view/{id}");
+    }
+
     private void GoToWrite()
     {
-        Navigation.NavigateTo("/write");
+        Navigation.NavigateTo("/journal");
     }
 
     private int GetWordCount(string content)
@@ -250,32 +244,14 @@
 
     private string GetMoodEmoji(string mood)
     {
-        return mood switch
-        {
-            "Happy" => "😊",
-            "Sad" => "😢",
-            "Calm" => "🧘",
-            "Excited" => "🎉",
-            "Anxious" => "😰",
-            "Grateful" => "🙏",
-            "Tired" => "😴",
-            "Angry" => "😠",
-            "Stressed" => "😟",
-            "Confident" => "💪",
-            "Relaxed" => "😌",
-            "Thoughtful" => "🤔",
-            "Curious" => "🧐",
-            "Nostalgic" => "💭",
-            "Bored" => "😑",
-            "Lonely" => "😔",
-            _ => "📝"
-        };
+        // Removed emoji display
+        return "";
     }
 
     private string GetMoodColor(string mood)
     {
-        var negative = new[] { "Sad", "Angry", "Stressed", "Lonely", "Anxious" };
-        return negative.Contains(mood) ? "entry-card-title-red" : "";
+        var moodObj = allMoods.FirstOrDefault(m => m.Name == mood);
+        return moodObj?.Category == "Negative" ? "entry-card-title-red" : "";
     }
 
     private async Task EditEntry(int id)

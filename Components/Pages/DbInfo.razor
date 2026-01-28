@@ -49,7 +49,7 @@
             <div class="entry-item">
                 <h4>@entry.Title</h4>
                 <p><strong>Date:</strong> @entry.Date.ToShortDateString()</p>
-                <p><strong>Mood:</strong> @entry.PrimaryMood</p>
+                <p><strong>Mood:</strong> @(entry.PrimaryMood ?? "No mood")</p>
                 <p><strong>Content:</strong> @entry.Content?.Substring(0, Math.Min(100, entry.Content?.Length ?? 0))...</p>
             </div>
         }
@@ -122,8 +122,7 @@
                 Date = DateTime.Today,
                 Title = $"Test Entry {DateTime.Now:HH:mm:ss}",
                 Content = "This is a test entry to verify database functionality.",
-                PrimaryMood = "Happy",
-                Category = "Positive",
+                PrimaryMood = "Happy", // store mood name
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };

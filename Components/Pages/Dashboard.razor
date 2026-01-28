@@ -3,6 +3,8 @@
 @using Daily_Journal_App.Models
 @inject NavigationManager Navigation
 @inject JournalService JournalService
+@inject MoodService MoodService
+@inject TagService TagService
 
 <div class="ds-dashboard-main">
     <h1>Dashboard</h1>
@@ -26,14 +28,14 @@
     <h2 class="ds-dashboard-section">Quick Actions</h2>
     <div class="ds-dashboard-quick-actions">
         <button class="ds-dashboard-primary" @onclick="GoToJournal">
-            <span>✏️</span> Write Today's Entry
+            Write Today's Entry
         </button>
         <div class="ds-dashboard-secondary-actions">
             <button @onclick="GoToEntries">
-                <span>📚</span> View All Entries
+                View All Entries
             </button>
             <button @onclick="GoToAnalytics">
-                <span>📊</span> View Statistics
+                View Statistics
             </button>
         </div>
     </div>
@@ -45,7 +47,7 @@
             <div class="ds-dashboard-recent-entry-date"><b>@recentEntry.Date.ToString("MMMM dd, yyyy")</b></div>
             <div class="ds-dashboard-recent-entry-title">
                 @recentEntry.Title
-                <span class="ds-mini-mood">@GetMoodEmoji(recentEntry.PrimaryMood) @recentEntry.PrimaryMood</span>
+                <span class="ds-mini-mood">@recentEntry.PrimaryMoodName</span>
             </div>
             <div class="ds-dashboard-recent-entry-meta">@GetWordCount(recentEntry.Content) words</div>
         </div>
@@ -64,6 +66,7 @@
     private int totalWords = 0;
     private int currentStreak = 0;
     private JournalEntry? recentEntry;
+    private List<Mood> allMoods = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,6 +77,7 @@
     {
         try
         {
+            allMoods = await MoodService.GetAllMoodsAsync();
             var entries = await JournalService.GetEntriesAsync();
             
             totalEntries = entries.Count;
@@ -134,30 +138,6 @@
 
         var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
         return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
-    }
-
-    private string GetMoodEmoji(string mood)
-    {
-        return mood switch
-        {
-            "Happy" => "😊",
-            "Sad" => "😢",
-            "Calm" => "🧘",
-            "Excited" => "🎉",
-            "Anxious" => "😰",
-            "Grateful" => "🙏",
-            "Tired" => "😴",
-            "Angry" => "😠",
-            "Stressed" => "😟",
-            "Confident" => "💪",
-            "Relaxed" => "😌",
-            "Thoughtful" => "🤔",
-            "Curious" => "🧐",
-            "Nostalgic" => "💭",
-            "Bored" => "😑",
-            "Lonely" => "😔",
-            _ => "📝"
-        };
     }
 
     private void HandleViewRecentEntry()
